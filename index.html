@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Interactif avec Firestore</title>
+    <!-- Inclusion de Google Fonts pour la police Roboto -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Inclusion de Font Awesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Inclusion de Vue.js depuis un CDN -->
     <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.js"></script>
     <script type="module">
@@ -238,6 +242,20 @@
                 },
                 showHistory() {
                     this.currentView = 'history';
+                },
+                getMention(score, total) {
+                    const percentage = (score / total) * 100;
+                    if (percentage === 100) {
+                        return '🥇 Excellent ! Vous avez obtenu un score parfait !';
+                    } else if (percentage >= 80) {
+                        return '🎉 Très bien !';
+                    } else if (percentage >= 60) {
+                        return '👍 Bien joué !';
+                    } else if (percentage >= 40) {
+                        return '😐 Peut mieux faire.';
+                    } else {
+                        return '😞 Échec. Réessayez !';
+                    }
                 }
             },
             created() {
@@ -250,7 +268,7 @@
     <style>
         /* Styles pour la mise en page mobile */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif; /* Utilisation de la police Roboto */
             margin: 0;
             padding: 0;
             background-color: #f0f0f0;
@@ -275,7 +293,9 @@
             margin-bottom: 20px; /* Espace en dessous de l'image */
         }
         button {
-            display: block;
+            display: flex; /* Utilise flexbox pour aligner le contenu */
+            align-items: center; /* Centre verticalement */
+            justify-content: center; /* Centre horizontalement */
             width: 100%;
             padding: 10px 20px;
             margin: 10px 0;
@@ -285,9 +305,13 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+            font-size: 16px; /* Augmente la taille de la police */
         }
         button:hover {
             background-color: #45a049;
+        }
+        button i { /* Style pour les icônes */
+            margin-right: 8px; /* Espace entre l'icône et le texte */
         }
         .hidden {
             display: none; /* Cacher les sections non visibles */
@@ -367,25 +391,25 @@
         <!-- Bannière d'image ajoutée -->
         <img src="drapeau.png" alt="Bannière du quiz" class="banner"> 
         <div class="home-buttons">
-            <button @click="showSummaryList">Résumés et Quiz</button>
-            <button @click="showLoginForm">Administration</button>
-            <button @click="showHistory">Historique des scores</button>
+            <button @click="showSummaryList"><i class="fas fa-book"></i> Résumés et Quiz</button>
+            <button @click="showLoginForm"><i class="fas fa-user-lock"></i> Administration</button>
+            <button @click="showHistory"><i class="fas fa-history"></i> Historique des scores</button>
         </div>
     </div>
 
     <div v-if="currentView === 'summaryList'" class="summary-list">
         <h2>Choisissez un Résumé</h2>
         <button v-for="summary in summaries" :key="summary.id" @click="showSummary(summary.id)">
-            {{ summary.title }}
+            <i class="fas fa-file-alt"></i> {{ summary.title }}
         </button>
-        <button @click="goHome">Retour à l'accueil</button>
+        <button @click="goHome"><i class="fas fa-arrow-left"></i> Retour à l'accueil</button>
     </div>
 
     <div v-if="currentView === 'summary'" class="summary">
         <h2>{{ currentSummary.title }}</h2>
         <div class="summary-content" v-html="currentSummary.content"></div>
-        <button @click="startQuiz">Commencer le Quiz</button>
-        <button @click="showSummaryList">Retour à la liste des résumés</button>
+        <button @click="startQuiz"><i class="fas fa-play-circle"></i> Commencer le Quiz</button>
+        <button @click="showSummaryList"><i class="fas fa-arrow-left"></i> Retour à la liste des résumés</button>
     </div>
 
     <div v-if="currentView === 'quiz'" class="quiz">
@@ -401,7 +425,7 @@
         <div v-else>
             <h3>Quiz terminé !</h3>
             <p class="score">Votre score : {{ score }} / {{ currentQuiz.questions.length }}</p>
-            <button @click="showSummaryList">Retour à la liste des résumés</button>
+            <button @click="showSummaryList"><i class="fas fa-arrow-left"></i> Retour à la liste des résumés</button>
         </div>
     </div>
 
@@ -409,8 +433,8 @@
         <h2>Connexion Administrateur</h2>
         <input v-model="username" type="text" placeholder="Nom d'utilisateur">
         <input v-model="password" type="password" placeholder="Mot de passe">
-        <button @click="login">Se connecter</button>
-        <button @click="goHome">Retour à l'accueil</button>
+        <button @click="login"><i class="fas fa-sign-in-alt"></i> Se connecter</button>
+        <button @click="goHome"><i class="fas fa-arrow-left"></i> Retour à l'accueil</button>
     </div>
 
     <div v-if="currentView === 'admin'" class="admin-panel">
@@ -425,16 +449,16 @@
         <label for="correctAnswerIndex">Index de la bonne réponse (1-5) :</label>
         <input v-model="correctAnswerIndex" type="number" min="1" max="5" placeholder="Index de la bonne réponse (1-5)">
         
-        <button @click="addQuestion">Ajouter la question</button>
-        <button @click="saveSummaryAndQuiz">Enregistrer le résumé et le quiz</button>
+        <button @click="addQuestion"><i class="fas fa-plus"></i> Ajouter la question</button>
+        <button @click="saveSummaryAndQuiz"><i class="fas fa-save"></i> Enregistrer le résumé et le quiz</button>
         
         <h3>Liste des Résumés et Quiz</h3>
         <div class="grid-container">
             <div v-for="summary in summaries" :key="summary.id" class="grid-item">
                 <h3>{{ summary.title }}</h3>
-                <button @click="editSummary(summary.id)">Modifier</button>
-                <button @click="deleteSummary(summary.id)">Supprimer</button>
-                <button @click="showQuestions(summary.quizId)">Voir les questions</button>
+                <button @click="editSummary(summary.id)"><i class="fas fa-edit"></i> Modifier</button>
+                <button @click="deleteSummary(summary.id)"><i class="fas fa-trash-alt"></i> Supprimer</button>
+                <button @click="showQuestions(summary.quizId)"><i class="fas fa-question-circle"></i> Voir les questions</button>
             </div>
         </div>
         
@@ -447,10 +471,10 @@
                         {{ answer }} {{ answerIndex === question.correctAnswer ? '(Correct)' : '' }}
                     </li>
                 </ul>
-                <button @click="editQuestion(index)">Modifier</button>
-                <button @click="deleteQuestion(index)">Supprimer</button>
+                <button @click="editQuestion(index)"><i class="fas fa-edit"></i> Modifier</button>
+                <button @click="deleteQuestion(index)"><i class="fas fa-trash-alt"></i> Supprimer</button>
             </div>
-            <button @click="hideQuestions">Fermer</button>
+            <button @click="hideQuestions"><i class="fas fa-arrow-left"></i> Fermer</button>
         </div>
 
         <div v-if="editingQuestion !== null">
@@ -462,11 +486,11 @@
                    type="text">
             <label for="editingCorrectAnswer">Index de la bonne réponse :</label>
             <input v-model="currentQuiz.questions[editingQuestion].correctAnswer" type="number" min="0" max="4">
-            <button @click="saveEditedQuestion">Enregistrer les modifications</button>
-            <button @click="cancelEditingQuestion">Annuler</button>
+            <button @click="saveEditedQuestion"><i class="fas fa-save"></i> Enregistrer les modifications</button>
+            <button @click="cancelEditingQuestion"><i class="fas fa-times"></i> Annuler</button>
         </div>
 
-        <button @click="goHome">Déconnexion</button>
+        <button @click="goHome"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
     </div>
 
     <div v-if="currentView === 'history'" class="history">
@@ -479,6 +503,7 @@
                     <th>Score</th>
                     <th>Total</th>
                     <th>Pourcentage</th>
+                    <th>Mention</th> <!-- Nouvelle colonne pour les mentions -->
                 </tr>
             </thead>
             <tbody>
@@ -488,10 +513,11 @@
                     <td>{{ entry.score }}</td>
                     <td>{{ entry.total }}</td>
                     <td>{{ ((entry.score / entry.total) * 100).toFixed(2) }}%</td>
+                    <td>{{ getMention(entry.score, entry.total) }}</td> <!-- Affichage de la mention -->
                 </tr>
             </tbody>
         </table>
-        <button @click="goHome">Retour à l'accueil</button>
+        <button @click="goHome"><i class="fas fa-arrow-left"></i> Retour à l'accueil</button>
     </div>
 </div>
 </body>
